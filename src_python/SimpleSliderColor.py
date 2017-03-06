@@ -18,10 +18,18 @@ pixels = Adafruit_WS2801.WS2801Pixels(PIXEL_COUNT, spi=SPI.SpiDev(SPI_PORT, SPI_
 clients = []
 class SimpleSliderColor(WebSocket):
     def handleMessage(self):
-        print('handling message ' + self.data)
-       	base_g, base_b, base_r = pixels.get_pixel_rgb(0)
-        print('got values ', base_r, base_g, base_b)
+        #print('handling message ' + self.data)
         col = self.data[0]
+        if col == 'X':
+            pixels.clear()
+            pixels.show()
+            for client in clients:
+                if client != self:
+                     client.sendMessage('X') 
+            return
+
+       	base_g, base_b, base_r = pixels.get_pixel_rgb(0)
+        #print('got values ', base_r, base_g, base_b)
         val = int(self.data[1:])
         if col == "r":
             base_r = val
@@ -29,7 +37,7 @@ class SimpleSliderColor(WebSocket):
             base_g = val
         elif col == "b":
             base_b = val
-        print('changing to ', base_r, base_g, base_b)
+        #print('changing to ', base_r, base_g, base_b)
         for n in range(PIXEL_COUNT):
             pixels.set_pixel_rgb(n, base_g, base_b, base_r)
         pixels.show()
@@ -38,12 +46,16 @@ class SimpleSliderColor(WebSocket):
                 client.sendMessage(self.data)
 
     def handleConnected(self):
-        print (self.address, 'connected')
+        #print (self.address, 'connected')
         clients.append(self)
+        g, b, r = pixels.get_pixel_rgb(0)
+        self.sendMessage('r' + str(r))
+        self.sendMessage('g' + str(g))
+        self.sendMessage('b' + str(b))
 
     def handleClose(self):
         clients.remove(self)
-        print (self.address, 'closed')
+        #print (self.address, 'closed')
 
 server = SimpleWebSocketServer('', 5000, SimpleSliderColor)
 print ("Starting to serve on port 5000")
