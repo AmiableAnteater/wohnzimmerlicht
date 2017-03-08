@@ -25,6 +25,16 @@ class WS2801Wrapper (Adafruit_WS2801.WS2801Pixels):
         self._pixels[n*3+1] = b & 0xFF
         self._pixels[n*3+2] = r & 0xFF
 
+    def set_pixels_rgb(self, r, g, b, pixel_iteratable=None):
+        """Set the specified pixels in pixel_iteratable to the provided 8-bit red, 
+        green, blue component values.  Note you MUST call show() after setting pixels to
+        see the LEDs change color!
+        """
+        if not pixel_iteratable:
+            pixel_iteratable = range(self.count())
+        for n in pixel_iteratable:
+            self.set_pixel_rgb(n, r, g, b)
+        
     def get_pixel_rgb(self, n):
         """Retrieve the 8-bit red, green, blue component color values of the
         specified pixel n.  Will return a 3-tuple of red, green, blue data.
@@ -45,6 +55,25 @@ class WS2801Wrapper (Adafruit_WS2801.WS2801Pixels):
         left_b = b - right_b
         self.add_rgb(left_pixel, left_r, left_g, left_b)
         self.add_rgb(left_pixel + 1, right_r, right_g, right_b)
+        
+    @staticmethod
+    def color_wheel_to_rgb(color_index):
+        if color_index < 85:
+            return color_index * 3, 255 - color_index * 3, 0
+        elif color_index < 170:
+            color_index -= 85
+            return 255 - color_index * 3, 0, color_index * 3
+        else:
+            color_index -= 170
+            return 0, color_index * 3, 255 - color_index * 3
+    
+    def set_pixel_colorwheel(self, color_index, pixel_index):
+        r, g, b = self.color_wheel_to_rgb(color_index)
+        self.set_pixel_rgb(pixel_index, r, g, b)
+
+    def set_pixels_colorwheel(self, color_index, pixel_indices=None):
+        r, g, b = self.color_wheel_to_rgb(color_index)
+        self.set_pixels_rgb(r, g, b, pixel_indices)
 
 
 if __name__ == "__main__":
