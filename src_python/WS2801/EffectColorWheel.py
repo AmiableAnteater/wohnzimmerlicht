@@ -36,4 +36,4 @@ def effect(pixels: WS2801Wrapper, event: Event, stretch_factor=1, speed=10):
 
            
 if __name__ == "__main__":
-    run_effect(effect)
+    run_effect(effect, (.75, 10))
